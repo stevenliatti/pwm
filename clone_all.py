@@ -13,7 +13,7 @@ token = sys.argv[1]
 project_id = sys.argv[2]
 
 base_url = 'https://gitedu.hesge.ch/api/v4/projects/'
-params = {'simple': 'true'}
+params = {'simple': 'true', 'per_page': 100}
 headers = {'PRIVATE-TOKEN': token}
 
 repositories = requests.get(base_url + project_id + '/forks', params=params, headers=headers).json()
