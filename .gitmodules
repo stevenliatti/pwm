@@ -1,3 +1,0 @@
-[submodule "public"]
-	path = public
-	url = ssh://git@ssh.hesge.ch:10572/iti_assistants/modele-tp-etudiants-public.git
