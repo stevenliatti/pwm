@@ -7,7 +7,7 @@ import requests
 import subprocess
 
 if len(sys.argv) < 4:
-    print('Usage: ' + sys.argv[0] + ' <token> <group_id> <directory>')
+    print('Usage: ' + sys.argv[0] + ' <token> <group_id> <directory> <until_date>')
     exit(1)
 
 directory = sys.argv[3]
@@ -45,6 +45,17 @@ for repo in repositories:
 
     print('Members: ' + members_names)
     print('Web url: ' + web_url)
-    print('Cloning in "' + directory + '/' + repo['path'] + '"\n')
-    # TODO: checkout at date
+    print('Cloning in "' + directory + '/' + repo['path'] + '"')
+
     subprocess.run(["git", "clone", "-q", ssh_url_to_repo, directory + '/' + repo['path']])
+    if len(sys.argv) > 4:
+        until_date = sys.argv[4]
+        commit_id = subprocess.check_output([
+            "git","rev-list", "-n", "1", "--before=\"" + until_date + "\"",
+            "master"], cwd=directory + '/' + repo['path']).decode('utf-8').rstrip()
+        subprocess.run(
+            ["git", "checkout", "-q", str(commit_id)],
+            cwd=directory + '/' + repo['path'])
+        print("Checkout at " + str(commit_id) + "\n")
+    else:
+        print()

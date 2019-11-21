@@ -41,12 +41,12 @@ Crée un dépôt git (projet) au sein d'un groupe à partir de l'URL d'un projet
 
 ### clone_all_repos_in_group.py
 ```bash
-python3 clone_all_repos_in_group.py <token> <group_id> <directory>
+python3 clone_all_repos_in_group.py <token> <group_id> <directory> <until_date>
 ```
-Clone tous les repositories d'un groupe `group_id` donné dans un répertoire nommé `directory`. Affiche sur la sortie standard les membres du groupe, l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
+Clone tous les repositories d'un groupe `group_id` donné dans un répertoire nommé `directory`. Si une date `until_date` (au format `AAAA-MM-DD hh:mm`) est donnée, exécute un `git checkout` sur le premier commit précédant cette date. Affiche sur la sortie standard les membres du groupe, l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
 
 ### clone_all_forks.py
 ```bash
-python3 clone_all_forks.py <token> <project_id> <directory>
+python3 clone_all_forks.py <token> <project_id> <directory> <until_date>
 ```
-Clone tous les forks d'un projet `project_id` donné dans un répertoire nommé `directory`. Affiche sur la sortie standard les membres du groupe (avec un droit d'accès supérieur à *Reporter*), l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
+Clone tous les forks d'un projet `project_id` donné dans un répertoire nommé `directory`. Si une date `until_date` (au format `AAAA-MM-DD hh:mm`) est donnée, exécute un `git checkout` sur le premier commit précédant cette date. Affiche sur la sortie standard les membres du groupe (avec un droit d'accès supérieur à *Reporter*), l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
