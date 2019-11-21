@@ -41,7 +41,7 @@ for repo in repositories:
     members_names = ''
 
     for member in members:
-        members_names += member['username'] + ', '
+        members_names += "'" + member['name'] + "' (" + member['username'] + '), '
 
     print('Members: ' + members_names)
     print('Web url: ' + web_url)

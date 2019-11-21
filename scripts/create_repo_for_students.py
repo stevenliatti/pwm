@@ -35,10 +35,16 @@ project = requests.post(base_url + '/projects', params=params, headers=headers).
 if 'message' in project:
     print('Error in creating project: %s' % project)
     exit(1)
+print("Project '" + project['name'] + "' at '" + project['web_url'] + "' created")
 
 # Add each student as project's maintainer (level 40)
 for user_id in users_ids:
     params = {'user_id': user_id, 'access_level': 40}
     new_user = requests.post(base_url + '/projects/' + str(project['id']) + '/members', params=params, headers=headers).json()
+
+    if 'message' in new_user:
+        print('Error in adding user: %s' % new_user)
+    else:
+        print("Adding '" + new_user['name'] + "' (" + new_user['username'] + ") in '" + project['name'] + "'")
 
 # Do not forget : students have to add second remote in their local repositories for pulling last changes.

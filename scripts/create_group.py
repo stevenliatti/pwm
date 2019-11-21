@@ -25,5 +25,4 @@ if 'message' in group:
     print('Error in creating group: %s' % group)
     exit(1)
 
-print("Group '" + group['name'] + "' with id '" + str(group['id']) + "' and visibility '" + group['visibility'] + "' available at '" + group['web_url'] + "'")
-print(str(group['id']))
+print("Group '" + group['name'] + "' with id '" + str(group['id']) + "' and visibility '" + group['visibility'] + "' available at '" + group['web_url'] + "';" + str(group['id']))
