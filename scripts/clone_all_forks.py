@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import json
 import requests
 import subprocess
 
-if len(sys.argv) < 3:
-    print('Usage: ' + sys.argv[0] + ' <token> <project_id>')
+if len(sys.argv) < 4:
+    print('Usage: ' + sys.argv[0] + ' <token> <project_id> <directory>')
+    exit(1)
+
+directory = sys.argv[3]
+try:
+    os.mkdir(directory)
+except OSError:
+    print("Creation of the directory '%s' failed, exit\n" % directory)
     exit(1)
 
 token = sys.argv[1]
@@ -32,5 +40,6 @@ for repo in repositories:
 
     print('Members: ' + members_names)
     print('Web url: ' + web_url)
-    print('Cloning in "repositories/' + repo['namespace']['name'] + '"\n')
-    subprocess.run(["git", "clone", "-q", ssh_url_to_repo, "repositories/" + repo['namespace']['name']])
+    print('Cloning in "' + directory + '/' + repo['namespace']['name'] + '"\n')
+    # TODO: checkout at date
+    subprocess.run(["git", "clone", "-q", ssh_url_to_repo, directory + '/' + repo['namespace']['name']])

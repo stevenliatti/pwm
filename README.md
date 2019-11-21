@@ -22,6 +22,12 @@ Tous les scripts sont (actuellement) écrits en python et testés avec la versio
 
 ![image](doc/project_id.png)
 
+### create_group.py
+```bash
+python3 create_group.py <token> <group_name> <visibility>
+```
+Crée un groupe au sens gitlab du terme, nommé `group_name`, avec la visibilité optionnelle `visibility` (`private`, `internal` ou `public`), par défaut privée. Si le groupe existe déjà, ne fait rien. Retourne le `group_id` du groupe créé, nécessaire pour `create_repo_for_students.py` par exemple.
+
 ### create_repo_for_students.py
 ```bash
 python3 create_repo_for_students.py <token> <import_url> <group_id> <project_name> <student1,student2,...,studentN>
@@ -29,18 +35,18 @@ python3 create_repo_for_students.py <token> <import_url> <group_id> <project_nam
 Crée un dépôt git (projet) au sein d'un groupe à partir de l'URL d'un projet existant pour une liste d'étudiants. Détail des arguments :
 - `token` : le token gitlab.
 - `import_url` : l'URL (http) du projet (repository) existant. Ce projet doit être public.
-- `group_id` : l'identifiant du groupe dédié au cours/TP, créé précédemment.
+- `group_id` : l'identifiant du groupe dédié au cours/TP, créé précédemment (avec `create_group.py` par exemple).
 - `project_name` : le nom du nouveau repository à créer pour le ou les étudiants concernés.
 - `student1,student2,...,studentN` : une liste de login gitlab des étudiants. Les login sont séparés par une virgule. Peut contenir un seul login.
 
 ### clone_all_repos_in_group.py
 ```bash
-python3 clone_all_repos_in_group.py <token> <group_id>
+python3 clone_all_repos_in_group.py <token> <group_id> <directory>
 ```
-Clone tous les repositories d'un groupe `group_id` donné dans un répertoire nommé `repositories`. Affiche sur la sortie standard les membres du groupe, l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
+Clone tous les repositories d'un groupe `group_id` donné dans un répertoire nommé `directory`. Affiche sur la sortie standard les membres du groupe, l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
 
 ### clone_all_forks.py
 ```bash
-python3 clone_all_forks.py <token> <project_id>
+python3 clone_all_forks.py <token> <project_id> <directory>
 ```
-Clone tous les forks d'un projet `project_id` donné dans un répertoire nommé `repositories`. Affiche sur la sortie standard les membres du groupe (avec un droit d'accès supérieur à *Reporter*), l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
+Clone tous les forks d'un projet `project_id` donné dans un répertoire nommé `directory`. Affiche sur la sortie standard les membres du groupe (avec un droit d'accès supérieur à *Reporter*), l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
