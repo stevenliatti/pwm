@@ -51,3 +51,13 @@ Clone tous les repositories d'un groupe `group_id` donné dans un répertoire no
 python3 clone_all_forks.py <token> <project_id> <directory> <until_date>
 ```
 Clone tous les forks d'un projet `project_id` donné dans un répertoire nommé `directory`. Si une date `until_date` (au format `AAAA-MM-DD hh:mm`) est donnée, exécute un `git checkout` sur le premier commit précédant cette date. Affiche sur la sortie standard les membres du groupe (avec un droit d'accès supérieur à *Reporter*), l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
+
+## "Convenient" script
+```bash
+./create_group_and_repos.sh <token> <group_name> <import_url> <repos_students>
+```
+Un script bash est également disponible, `create_group_and_repos.sh` qui permet de "batcher" les opérations de création de groupe et d'ajout des étudiants à partir d'un fichier texte `repos_students` formaté ainsi :
+```
+group1;user1,user2
+group2;user3,user4
+```
