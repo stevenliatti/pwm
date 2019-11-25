@@ -56,8 +56,8 @@ Clone tous les forks d'un projet `project_id` donné dans un répertoire nommé 
 ```bash
 ./create_group_and_repos.sh <token> <group_name> <import_url> <repos_students>
 ```
-Un script bash est également disponible, `create_group_and_repos.sh` qui permet de "batcher" les opérations de création de groupe et d'ajout des étudiants à partir d'un fichier texte `repos_students` formaté ainsi :
+Un script bash est également disponible, `create_group_and_repos.sh` qui permet de "batcher" les opérations de création de groupe et de repositories à partir d'un fichier texte `repos_students` formaté ainsi :
 ```
-group1;user1,user2
-group2;user3,user4
+repository1;user1,user2
+repository2;user3,user4
 ```
