@@ -30,7 +30,7 @@ Crée un groupe au sens gitlab du terme, nommé `group_name`, avec la visibilit�
 
 ### create_repo_for_students.py
 ```bash
-python3 create_repo_for_students.py <token> <import_url> <group_id> <project_name> <student1,student2,...,studentN>
+python3 create_repo_for_students.py <token> <import_url> <group_id> <project_name> <student1,student2,...,studentN> <expires_at>
 ```
 Crée un dépôt git (projet) au sein d'un groupe à partir de l'URL d'un projet existant pour une liste d'étudiants. Détail des arguments :
 - `token` : le token gitlab.
@@ -38,6 +38,7 @@ Crée un dépôt git (projet) au sein d'un groupe à partir de l'URL d'un projet
 - `group_id` : l'identifiant du groupe dédié au cours/TP, créé précédemment (avec `create_group.py` par exemple).
 - `project_name` : le nom du nouveau repository à créer pour le ou les étudiants concernés.
 - `student1,student2,...,studentN` : une liste de login gitlab des étudiants. Les login sont séparés par une virgule. Peut contenir un seul login.
+- `expires_at`: optionnel, au format `AAAA-MM-DD`, supprime les étudiants ajoutés à la date donnée.
 
 ### clone_all_repos_in_group.py
 ```bash
