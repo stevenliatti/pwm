@@ -17,6 +17,6 @@ printf "$group\n\n"
 for line in $(cat $repos_students); do
     project_name=$(echo $line | cut -d';' -f1)
     students=$(echo $line | cut -d';' -f2)
-    new_repo=$(scripts/create_repo_for_students.py $token $import_url $group_id $project_name $students)
+    new_repo=$(scripts/create_repo_for_students.py $token $import_url $group_id "$project_name" $students)
     printf "$new_repo\n\n"
 done

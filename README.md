@@ -30,14 +30,14 @@ Crée un groupe au sens gitlab du terme, nommé `group_name`, avec la visibilit�
 
 ### create_repo_for_students.py
 ```bash
-python3 create_repo_for_students.py <token> <import_url> <group_id> <project_name> <student1,student2,...,studentN> <expires_at>
+python3 create_repo_for_students.py <token> <import_url> <group_id> <project_name> <student-mail1,student-mail2,...,student-mailN> <expires_at>
 ```
-Crée un dépôt git (projet) au sein d'un groupe à partir de l'URL d'un projet existant pour une liste d'étudiants. Détail des arguments :
+Crée un dépôt git (projet) au sein d'un groupe à partir de l'URL d'un projet existant pour une liste d'emails d'étudiants. Détail des arguments :
 - `token` : le token gitlab.
 - `import_url` : l'URL (http) du projet (repository) existant. Ce projet doit être public.
 - `group_id` : l'identifiant du groupe dédié au cours/TP, créé précédemment (avec `create_group.py` par exemple).
 - `project_name` : le nom du nouveau repository à créer pour le ou les étudiants concernés.
-- `student1,student2,...,studentN` : une liste de login gitlab des étudiants. Les login sont séparés par une virgule. Peut contenir un seul login.
+- `student-mail1,student-mail2,...,student-mailN` : une liste d'emails des étudiants. Les emails sont séparés par une virgule. Peut contenir un seul email.
 - `expires_at`: optionnel, au format `AAAA-MM-DD`, supprime les étudiants ajoutés à la date donnée.
 
 ### clone_all_repos_in_group.py
@@ -58,6 +58,6 @@ Clone tous les forks d'un projet `project_id` donné dans un répertoire nommé 
 ```
 Un script bash est également disponible, `create_group_and_repos.sh` qui permet de "batcher" les opérations de création de groupe et de repositories à partir d'un fichier texte `repos_students` formaté ainsi :
 ```
-repository1;user1,user2
-repository2;user3,user4
+repository1;email1,email2
+repository2;email3,email4
 ```

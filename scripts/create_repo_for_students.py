@@ -6,24 +6,25 @@ import requests
 import subprocess
 
 if len(sys.argv) < 6:
-    print('Usage: ' + sys.argv[0] + ' <token> <import_url> <group_id> <project_name> <student1,student2,...,studentN> <expires_at>')
+    print('Usage: ' + sys.argv[0] + ' <token> <import_url> <group_id> <project_name> <student-mail1,student-mail2,...,student-mailN> <expires_at>')
     exit(1)
 
 token = sys.argv[1]
 import_url = sys.argv[2]
 group_id = sys.argv[3]
-project_name = sys.argv[4]
+# split '@' in the case when project name = student's email
+project_name = sys.argv[4].split('@')[0]
 
 base_url = 'https://gitedu.hesge.ch/api/v4'
 headers = {'PRIVATE-TOKEN': token}
 
-# Get students ids from their usernames
-users_names = sys.argv[5].split(',')
+# Get students ids from their emails
+users_emails = sys.argv[5].split(',')
 user_ids = []
-for username in users_names:
-    user_requested = requests.get(base_url + '/users', params={'username': username}, headers=headers).json()
+for email in users_emails:
+    user_requested = requests.get(base_url + '/users', params={'search': email}, headers=headers).json()
     if len(user_requested) == 0:
-        print('No user %s found, operation aborted' % username)
+        print('No user %s found, operation aborted' % email)
         exit(1)
     user_id = user_requested[0]['id']
     user_ids.append(user_id)
@@ -53,9 +54,10 @@ for user_id in user_ids:
     if 'message' in new_user:
         print('Error in adding user: %s' % new_user)
     else:
-        print(
-            "Adding '" + new_user['name'] + "' (" + new_user['username'] + ") in '"
-            + project['name'] + "' with access level: " + str(new_user['access_level'])
-            + ", expires at: " + new_user['expires_at'])
+        out = ("Adding '" + new_user['name'] + "' (" + new_user['username'] + ") in '"
+            + project['name'] + "' with access level: " + str(new_user['access_level']))
+        if len(sys.argv) > 6:
+            out += ", expires at: " + new_user['expires_at']
+        print(out)
 
 # Do not forget : students have to add second remote in their local repositories for pulling last changes.
