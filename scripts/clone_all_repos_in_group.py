@@ -1,30 +1,33 @@
 #!/usr/bin/env python3
 
 import os
-import sys
-import json
 import requests
 import subprocess
+import argparse
 
-if len(sys.argv) < 4:
-    print('Usage: ' + sys.argv[0] + ' <token> <group_id> <directory> <until_date>')
-    exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "token", metavar="TOKEN", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
+parser.add_argument(
+    "group_id", metavar="GROUP_ID", help="The group id (int) of the projects.")
+parser.add_argument(
+    "directory", metavar="DIRECTORY", help="Local directory where clone all repositories.")
+parser.add_argument(
+    "-u", "--until_date", help="Do a git checkout for all repositories at given date, format \"YYYY-MM-DD hh:mm\" (optional).")
+args = parser.parse_args()
 
-directory = sys.argv[3]
 try:
-    os.mkdir(directory)
+    os.mkdir(args.directory)
 except OSError:
-    print("Creation of the directory '%s' failed, exit\n" % directory)
+    print("Creation of the directory '%s' failed, exit\n" % args.directory)
     exit(1)
-
-token = sys.argv[1]
-group_id = sys.argv[2]
 
 base_url = 'https://gitedu.hesge.ch/api/v4/'
 params = {'simple': 'true', 'per_page': 100}
-headers = {'PRIVATE-TOKEN': token}
+headers = {'PRIVATE-TOKEN': args.token}
 
-repositories = requests.get(base_url + '/groups/' + group_id + '/projects', params=params, headers=headers).json()
+repositories = requests.get(base_url + '/groups/' + args.group_id +
+                            '/projects', params=params, headers=headers).json()
 if 'message' in repositories:
     print('Error retrieving repositories: ' + repositories['message'])
     exit(1)
@@ -41,21 +44,21 @@ for repo in repositories:
     members_names = ''
 
     for member in members:
-        members_names += "'" + member['name'] + "' (" + member['username'] + '), '
+        members_names += member['username'] + ', '
 
     print('Members: ' + members_names)
     print('Web url: ' + web_url)
-    print('Cloning in "' + directory + '/' + repo['path'] + '"')
+    print('Cloning in "' + args.directory + '/' + repo['path'] + '"')
 
-    subprocess.run(["git", "clone", "-q", ssh_url_to_repo, directory + '/' + repo['path']])
-    if len(sys.argv) > 4:
-        until_date = sys.argv[4]
+    subprocess.run(["git", "clone", "-q", ssh_url_to_repo,
+                    args.directory + '/' + repo['path']])
+    if args.until_date:
         commit_id = subprocess.check_output([
-            "git","rev-list", "-n", "1", "--before=\"" + until_date + "\"",
-            "master"], cwd=directory + '/' + repo['path']).decode('utf-8').rstrip()
+            "git", "rev-list", "-n", "1", "--before=\"" + args.until_date + "\"",
+            "master"], cwd=args.directory + '/' + repo['path']).decode('utf-8').rstrip()
         subprocess.run(
             ["git", "checkout", "-q", str(commit_id)],
-            cwd=directory + '/' + repo['path'])
+            cwd=args.directory + '/' + repo['path'])
         print("Checkout at " + str(commit_id) + "\n")
     else:
         print()

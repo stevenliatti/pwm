@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
-import sys
-import json
-import requests
-import subprocess
 import argparse
+import requests
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "token", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
+    "token", metavar="TOKEN", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
 parser.add_argument(
-    "group_name", help="The group name.")
+    "group_name", metavar="GROUP_NAME", help="The group name.")
 parser.add_argument(
     "--visibility", help="Group visibility. By default private.")
 args = parser.parse_args()

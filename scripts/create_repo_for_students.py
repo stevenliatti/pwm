@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 
-import sys
-import json
-import requests
-import subprocess
 import argparse
+import requests
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "token", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
+    "token", metavar="TOKEN", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
 parser.add_argument(
-    "group_id", help="The group id (int) where to store the created new project.")
+    "group_id", metavar="GROUP_ID", help="The group id (int) where to store the created new project.")
 parser.add_argument(
-    "emails", help="Emails list of students working in this project, separated by commas (email1,email2).")
+    "emails", metavar="EMAILS", help="Emails list of students working in this project, separated by commas (email1,email2).")
 parser.add_argument(
     "-n", "--name", help="The project name. If blank, take the first student name (from email) as name.")
 parser.add_argument("-i", "--import_url",
