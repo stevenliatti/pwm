@@ -6,10 +6,13 @@ import subprocess
 import argparse
 
 parser = argparse.ArgumentParser()
+group = parser.add_mutually_exclusive_group()
+group.add_argument("-g", "--group", action="store_true", help="Clone repositories from a group (with group_id) or forks of a project (with project_id) (default behavior).")
+group.add_argument("-f", "--forks", action="store_true", help="Clone forks of a project (with project_id).")
 parser.add_argument(
     "token", metavar="TOKEN", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
 parser.add_argument(
-    "group_id", metavar="GROUP_ID", help="The group id (int) of the projects.")
+    "id", metavar="ID", help="The group_id (int) of the projects or the project_id (int) of the forks.")
 parser.add_argument(
     "directory", metavar="DIRECTORY", help="Local directory where clone all repositories.")
 parser.add_argument(
@@ -26,8 +29,12 @@ base_url = 'https://gitedu.hesge.ch/api/v4/'
 params = {'simple': 'true', 'per_page': 100}
 headers = {'PRIVATE-TOKEN': args.token}
 
-repositories = requests.get(base_url + '/groups/' + args.group_id +
-                            '/projects', params=params, headers=headers).json()
+if args.forks:
+    url = base_url + 'projects/' + args.id + '/forks'
+else:
+    url = base_url + 'groups/' + args.id + '/projects'
+
+repositories = requests.get(url, params=params, headers=headers).json()
 if 'message' in repositories:
     print('Error retrieving repositories: ' + repositories['message'])
     exit(1)
@@ -44,21 +51,27 @@ for repo in repositories:
     members_names = ''
 
     for member in members:
-        members_names += member['username'] + ', '
+        if member['access_level'] > 20:  # Access level greater than "Reporter"
+            members_names += member['username'] + ', '
+
+    if args.forks:
+        repo_local_name = repo['namespace']['path']
+    else:
+        repo_local_name = repo['path']
 
     print('Members: ' + members_names)
     print('Web url: ' + web_url)
-    print('Cloning in "' + args.directory + '/' + repo['path'] + '"')
+    print('Cloning in "' + args.directory + '/' + repo_local_name + '"')
 
     subprocess.run(["git", "clone", "-q", ssh_url_to_repo,
-                    args.directory + '/' + repo['path']])
+                    args.directory + '/' + repo_local_name])
     if args.until_date:
         commit_id = subprocess.check_output([
             "git", "rev-list", "-n", "1", "--before=\"" + args.until_date + "\"",
-            "master"], cwd=args.directory + '/' + repo['path']).decode('utf-8').rstrip()
+            "master"], cwd=args.directory + '/' + repo_local_name).decode('utf-8').rstrip()
         subprocess.run(
             ["git", "checkout", "-q", str(commit_id)],
-            cwd=args.directory + '/' + repo['path'])
+            cwd=args.directory + '/' + repo_local_name)
         print("Checkout at " + str(commit_id) + "\n")
     else:
         print()
