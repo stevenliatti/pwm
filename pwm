@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 import requests
 import subprocess
 import argparse
+import yaml
 
 BASE_URL: str = 'https://gitedu.hesge.ch/api/v4'
 
@@ -29,6 +30,21 @@ def create_group(token: str, name: str, visibility: str = 'private') -> str:
     return str(group['id'])
 
 
+def delete_group(token: str, group_id: str):
+    """
+    Delete a group and all subprojects.
+    """
+    headers = {'PRIVATE-TOKEN': token}
+    deleted_group = requests.delete(
+        BASE_URL + '/groups/' + group_id, headers=headers).json()
+    if 'message' in deleted_group:
+        if deleted_group['message'] != '202 Accepted':
+            print('Error in deleting group: %s' % deleted_group)
+            exit(1)
+        else:
+            print('Group ' + group_id + ' successfully deleted')
+
+
 def get_project_name(args: Namespace) -> str:
     """
     If name is not defined in args, take it from first email.
@@ -40,11 +56,11 @@ def get_project_name(args: Namespace) -> str:
         return args.emails.split('@')[0]
 
 
-def emails_to_ids(emails: List[str], headers: Dict[str, str]) -> List[str]:
+def emails_to_ids(emails: List[str], headers: Dict[str, str]) -> List[int]:
     """
     Get students ids from their emails
     """
-    user_ids = List[str]
+    user_ids = []
     for email in emails:
         user_requested = requests.get(
             BASE_URL + '/users', params={'search': email}, headers=headers).json()
@@ -163,9 +179,36 @@ def clone_all(token: str, id: str, directory: str, until_date: Optional[str], so
             print()
 
 
+def command_create_group_repos(args):
+    """
+    Combine create_group and create_repository. For each repository listed in
+    given file, create a repo in group.
+    """
+    if args.visibility:
+        group_id = create_group(args.token, args.group_name, args.visibility)
+    else:
+        group_id = create_group(args.token, args.group_name)
+    print()
+
+    with open(args.repos_file) as f:
+        repos = yaml.full_load(f)
+        for repo in repos:
+            if 'name' in repo:
+                name = repo['name']
+            elif 'emails' in repo:
+                name = repo['emails'][0].split('@')[0]
+            else:
+                print('YAML file not correct, exit and delete group')
+                delete_group(args.token, group_id)
+                exit(1)
+            create_repository(
+                args.token, group_id, repo['emails'], name, args.import_url, args.expires_at)
+            print()
+
+
 def command_create_group(args):
     """
-    docstring
+    Call create_group
     """
     if args.visibility:
         create_group(args.token, args.group_name, args.visibility)
@@ -175,7 +218,7 @@ def command_create_group(args):
 
 def command_create_repository(args):
     """
-    docstring
+    Call create_repository
     """
     create_repository(args.token, args.group_id, args.emails.split(
         ','), get_project_name(args), args.import_url, args.expires_at)
@@ -183,10 +226,11 @@ def command_create_repository(args):
 
 def command_clone_all(args):
     """
-    docstring
+    Call clone_all
     """
     if args.forks:
-        clone_all(args.token, args.id, args.directory, args.until_date, 'forks')
+        clone_all(args.token, args.id, args.directory,
+                  args.until_date, 'forks')
     else:
         clone_all(args.token, args.id, args.directory, args.until_date)
 
@@ -194,7 +238,25 @@ def command_clone_all(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Practical Work Manager - \
         Manage students PW - Create group, projects or clone repositories')
-    subparsers = parser.add_subparsers(metavar='(group | repo | clone)')
+    parser.set_defaults(func=lambda _: parser.print_help())
+    subparsers = parser.add_subparsers(
+        metavar='(group_repos | group | repo | clone)')
+
+    parser_group_repos = subparsers.add_parser(
+        'group_repos', help='Create group and repos associated')
+    parser_group_repos.add_argument(
+        "token", metavar="TOKEN", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
+    parser_group_repos.add_argument(
+        "group_name", metavar="GROUP_NAME", help="The group name.")
+    parser_group_repos.add_argument(
+        "repos_file", metavar="REPOS_FILE", help="A file with projects names and students emails.")
+    parser_group_repos.add_argument(
+        "--visibility", help="Group visibility. By default private.")
+    parser_group_repos.add_argument("-i", "--import_url",
+                                    help="Import the publicly accessible project by URL given here (optional).")
+    parser_group_repos.add_argument("-x", "--expires_at",
+                                    help="Expiration date to kick off students from this project, at 00:00:00. YYYY-MM-DD format (optional).")
+    parser_group_repos.set_defaults(func=command_create_group_repos)
 
     parser_group = subparsers.add_parser('group', help='Create gitlab group')
     parser_group.add_argument(
@@ -238,6 +300,4 @@ if __name__ == '__main__':
     parser_clone.set_defaults(func=command_clone_all)
 
     args = parser.parse_args()
-    print(args)
     args.func(args)
-
