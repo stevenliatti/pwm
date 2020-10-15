@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+"""
+Practical Work Manager (pwm)
+Steven Liatti
+2020
+"""
+
 from argparse import Namespace
 import os
 from typing import Dict, List, Optional
@@ -43,17 +49,6 @@ def delete_group(token: str, group_id: str):
             exit(1)
         else:
             print('Group ' + group_id + ' successfully deleted')
-
-
-def get_project_name(args: Namespace) -> str:
-    """
-    If name is not defined in args, take it from first email.
-    Split at '@' and take first part.
-    """
-    if args.name:
-        return args.name
-    else:
-        return args.emails.split('@')[0]
 
 
 def emails_to_ids(emails: List[str], headers: Dict[str, str]) -> List[int]:
@@ -220,8 +215,12 @@ def command_create_repository(args):
     """
     Call create_repository
     """
+    if args.name:
+        name = args.name
+    else:
+        name = args.emails.split('@')[0]
     create_repository(args.token, args.group_id, args.emails.split(
-        ','), get_project_name(args), args.import_url, args.expires_at)
+        ','), name, args.import_url, args.expires_at)
 
 
 def command_clone_all(args):
@@ -239,13 +238,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Practical Work Manager - \
         Manage students PW - Create group, projects or clone repositories')
     parser.set_defaults(func=lambda _: parser.print_help())
+    parser.add_argument("-t", "--token", metavar="TOKEN",
+                        help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
     subparsers = parser.add_subparsers(
         metavar='(group_repos | group | repo | clone)')
 
     parser_group_repos = subparsers.add_parser(
         'group_repos', help='Create group and repos associated')
-    parser_group_repos.add_argument(
-        "token", metavar="TOKEN", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
     parser_group_repos.add_argument(
         "group_name", metavar="GROUP_NAME", help="The group name.")
     parser_group_repos.add_argument(
@@ -260,16 +259,12 @@ if __name__ == '__main__':
 
     parser_group = subparsers.add_parser('group', help='Create gitlab group')
     parser_group.add_argument(
-        "token", metavar="TOKEN", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
-    parser_group.add_argument(
         "group_name", metavar="GROUP_NAME", help="The group name.")
     parser_group.add_argument(
         "--visibility", help="Group visibility. By default private.")
     parser_group.set_defaults(func=command_create_group)
 
     parser_repo = subparsers.add_parser('repo', help='Create gitlab project')
-    parser_repo.add_argument(
-        "token", metavar="TOKEN", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
     parser_repo.add_argument(
         "group_id", metavar="GROUP_ID", help="The group id (int) where to store the created new project.")
     parser_repo.add_argument(
@@ -290,8 +285,6 @@ if __name__ == '__main__':
     group_clone.add_argument("-f", "--forks", action="store_true",
                              help="Clone forks of a project (with project_id).")
     parser_clone.add_argument(
-        "token", metavar="TOKEN", help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
-    parser_clone.add_argument(
         "id", metavar="ID", help="The group_id (int) of the projects or the project_id (int) of the forks.")
     parser_clone.add_argument(
         "directory", metavar="DIRECTORY", help="Local directory where clone all repositories.")
@@ -300,4 +293,15 @@ if __name__ == '__main__':
     parser_clone.set_defaults(func=command_clone_all)
 
     args = parser.parse_args()
+
+    if not args.token:
+        if os.path.isfile(path := os.environ.get('HOME') + '/.gitedu_token'):
+            with open(path) as file:
+                args.token = file.read().strip()
+        elif os.environ.get('GITEDU_TOKEN'):
+            args.token = os.environ.get('GITEDU_TOKEN')
+        else:
+            print('Error: you must given a token')
+            exit(1)
+
     args.func(args)
