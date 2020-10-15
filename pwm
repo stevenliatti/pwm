@@ -248,7 +248,7 @@ if __name__ == '__main__':
     parser_group_repos.add_argument(
         "group_name", metavar="GROUP_NAME", help="The group name.")
     parser_group_repos.add_argument(
-        "repos_file", metavar="REPOS_FILE", help="A file with projects names and students emails.")
+        "repos_file", metavar="REPOS_FILE", help="YAML file with projects names and/or students emails.")
     parser_group_repos.add_argument(
         "--visibility", help="Group visibility. By default private.")
     parser_group_repos.add_argument("-i", "--import_url",
