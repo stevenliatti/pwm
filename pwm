@@ -281,7 +281,7 @@ if __name__ == '__main__':
         'clone', help='Clone the repositories locally')
     group_clone = parser_clone.add_mutually_exclusive_group()
     group_clone.add_argument("-g", "--group", action="store_true",
-                             help="Clone repositories from a group (with group_id) or forks of a project (with project_id) (default behavior).")
+                             help="Clone repositories from a group (with group_id) (default behavior).")
     group_clone.add_argument("-f", "--forks", action="store_true",
                              help="Clone forks of a project (with project_id).")
     parser_clone.add_argument(
@@ -295,13 +295,16 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if not args.token:
-        if os.path.isfile(path := os.environ.get('HOME') + '/.gitedu_token'):
-            with open(path) as file:
-                args.token = file.read().strip()
+        home = os.environ.get('HOME')
+        if home:
+            token_file = home + '/.gitedu_token'
+            if os.path.isfile(token_file):
+                with open(token_file) as file:
+                    args.token = file.read().strip()
         elif os.environ.get('GITEDU_TOKEN'):
             args.token = os.environ.get('GITEDU_TOKEN')
         else:
-            print('Error: you must given a token')
+            print('Error: you must give a valid api token. Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens')
             exit(1)
 
     args.func(args)

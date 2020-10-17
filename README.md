@@ -33,7 +33,7 @@ Le moment est venu de créer les dépôts git pour chaque groupe/étudiant suiva
 
 ## Utilisation de pwm
 
-Ce programme est écrit en python et testé avec la version 3.9.0, avec les dépendances suivantes (voir `requirements.txt`) :
+Ce programme est écrit en python et testé avec les versions 3.6, 3.7, 3.8 et 3.9, avec les dépendances suivantes (voir `requirements.txt`) :
 
 ```
 requests
