@@ -4,8 +4,15 @@ Programme python pour gérer les travaux pratiques des étudiants avec la contra
 
 ## TL;DR
 
-- Créer un groupe et les repositories en une seule commande (avec un repository "image" optionnel) : `python pwm -t TOKEN group_repos GROUP_NAME REPOS_FILE [-i IMPORT_URL]`, voir [Syntaxe du fichier YAML (REPOS_FILE)](#syntaxe-du-fichier-yaml-repos_file)
-- Clone tous les projets des étudiants d'un groupe gitlab (`ID`) dans un répertoire créé à la volée : `python pwm -t TOKEN clone ID DIRECTORY`
+- Créer un groupe et les repositories en une seule commande (avec un repository "image" optionnel), voir [Syntaxe du fichier YAML (REPOS_FILE)](#syntaxe-du-fichier-yaml-repos_file) :
+  ```bash
+  python pwm -t TOKEN group_repos GROUP_NAME REPOS_FILE [-i IMPORT_URL]
+  ```
+
+- Clone tous les projets des étudiants d'un groupe gitlab (`ID`) dans un répertoire créé à la volée :
+  ```bash
+  python pwm -t TOKEN clone ID DIRECTORY
+  ```
 
 - [Practical Work Manager (pwm)](#practical-work-manager-pwm)
   - [TL;DR](#tldr)
