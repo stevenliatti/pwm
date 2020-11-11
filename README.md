@@ -4,8 +4,18 @@ Programme python pour gérer les travaux pratiques des étudiants avec la contra
 
 ## TL;DR
 
-- Créer un groupe et les repositories en une seule commande (avec un repository "image" optionnel) : `python pwm -t TOKEN group_repos GROUP_NAME REPOS_FILE [-i IMPORT_URL]`, voir [Syntaxe du fichier YAML (REPOS_FILE)](#syntaxe-du-fichier-yaml-repos_file)
-- Clone tous les projets des étudiants d'un groupe gitlab (`ID`) dans un répertoire créé à la volée : `python pwm -t TOKEN clone ID DIRECTORY`
+- Créer un groupe et les repositories en une seule commande, avec un repository "image" optionnel et un fichier d'emails (voir [Syntaxe du fichier YAML (REPOS_FILE)](#syntaxe-du-fichier-yaml-repos_file) :
+  ```bash
+  python pwm -t TOKEN group_repos GROUP_NAME REPOS_FILE [-i IMPORT_URL]
+  ```
+- Clone tous les projets des étudiants d'un groupe gitlab (`ID`) dans un répertoire créé à la volée :
+  ```bash
+  python pwm -t TOKEN clone ID DIRECTORY
+  ```
+- Liste les noms des projets dans un groupe :
+  ```bash
+  python pwm list ID
+  ```
 
 - [Practical Work Manager (pwm)](#practical-work-manager-pwm)
   - [TL;DR](#tldr)
@@ -15,6 +25,7 @@ Programme python pour gérer les travaux pratiques des étudiants avec la contra
     - [Création d'un groupe seulement](#création-dun-groupe-seulement)
     - [Création d'un sous-projet dans le groupe](#création-dun-sous-projet-dans-le-groupe)
     - [Clone de tous les repositories](#clone-de-tous-les-repositories)
+    - [Liste des projets d'un groupe ou des membres d'un projet](#liste-des-projets-dun-groupe-ou-des-membres-dun-projet)
   - [Syntaxe du fichier YAML (REPOS_FILE)](#syntaxe-du-fichier-yaml-repos_file)
     - [Noms et emails](#noms-et-emails)
     - [Emails seulement](#emails-seulement)
@@ -88,6 +99,12 @@ Crée un dépôt git (projet) au sein d'un groupe à partir de l'URL d'un projet
 python pwm clone [-h] [-g | -f] [-u UNTIL_DATE] ID DIRECTORY
 ```
 Clone tous les repositories d'un groupe (`-g`) ou tous les forks d'un projet (`-f`) selon l'id (`ID`) donné dans un répertoire nommé `DIRECTORY`. Si une date `UNTIL_DATE` (au format `YYYY-MM-DD hh:mm`) est donnée, exécute un `git checkout` sur le premier commit précédant cette date. Affiche sur la sortie standard les membres du groupe (avec un droit d'accès supérieur à *Reporter*), l'url web du repo et dans quel sous-répertoire se trouvent les fichiers.
+
+### Liste des projets d'un groupe ou des membres d'un projet
+```bash
+python pwm list [-h] [-p | -m] [-s SHOW] ID
+```
+Liste les projets d'un groupe ou les membres d'un projet selon l'id `ID`. L'argument `--show` (ou `-s`) permet de choisir quelles informations à afficher (par défaut le nom) : `[all | name | url | ssh]`.
 
 ## Syntaxe du fichier YAML (REPOS_FILE)
 Le fichier YAML doit respecter une des deux syntaxes suivantes.

@@ -8,11 +8,13 @@ Steven Liatti
 
 from argparse import Namespace
 import os
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 import requests
 import subprocess
 import argparse
+from requests.models import Response
 import yaml
+import json
 
 BASE_URL: str = 'https://gitedu.hesge.ch/api/v4'
 
@@ -112,6 +114,59 @@ def create_repository(token: str, group_id: str, emails: List[str], name: str, i
             print(out)
 
 
+def paginate_responses(url: str, headers: Dict[str, str], params: Dict[str, Any]) -> List[Response]:
+    """
+    Manage gitlab pagination, max 100 results by request
+    """
+    responses = [requests.get(url, params=params, headers=headers)]
+    last_response = responses[len(responses) - 1]
+
+    while last_response.status_code == 200 and len(last_response.headers['X-Next-Page']) != 0:
+        next_page = last_response.headers['X-Next-Page']
+        params['page'] = next_page
+        responses.append(requests.get(url, params=params, headers=headers))
+        last_response = responses[len(responses) - 1]
+
+    return responses
+
+
+def get_members(token: str, id: str) -> List:
+    """
+    Return members list from given id
+    """
+    url = BASE_URL + '/projects/' + id + '/members'
+
+    headers = {'PRIVATE-TOKEN': token}
+    params = {'simple': 'true', 'order_by': 'name',
+              'sort': 'asc', 'per_page': 100}
+    responses = paginate_responses(url, headers, params)
+
+    members = []
+    for r in responses:
+        members += r.json()
+    return members
+
+
+def get_projects(token: str, id: str, source: str = 'group') -> List:
+    """
+    Return projects list from given id and source ('group' or 'forks')
+    """
+    if source == 'forks':
+        url = BASE_URL + '/projects/' + id + '/forks'
+    else:
+        url = BASE_URL + '/groups/' + id + '/projects'
+
+    headers = {'PRIVATE-TOKEN': token}
+    params = {'simple': 'true', 'order_by': 'name',
+              'sort': 'asc', 'per_page': 100}
+    responses = paginate_responses(url, headers, params)
+
+    projects = []
+    for r in responses:
+        projects += r.json()
+    return projects
+
+
 def clone_all(token: str, id: str, directory: str, until_date: Optional[str], source: str = 'group'):
     """
     Clone all repositories (from a group or "forks of") from id (group or
@@ -123,18 +178,8 @@ def clone_all(token: str, id: str, directory: str, until_date: Optional[str], so
         print("Creation of the directory '%s' failed, exit\n" % directory)
         exit(1)
 
-    params = {'simple': 'true', 'per_page': 100}
     headers = {'PRIVATE-TOKEN': token}
-
-    if source == 'forks':
-        url = BASE_URL + '/projects/' + id + '/forks'
-    else:
-        url = BASE_URL + '/groups/' + id + '/projects'
-
-    repositories = requests.get(url, params=params, headers=headers).json()
-    if 'message' in repositories:
-        print('Error retrieving repositories: ' + repositories['message'])
-        exit(1)
+    repositories = get_projects(token, id, source)
 
     for repo in repositories:
         repo_url = BASE_URL + '/projects/' + str(repo['id']) + '/members'
@@ -234,6 +279,50 @@ def command_clone_all(args):
         clone_all(args.token, args.id, args.directory, args.until_date)
 
 
+def command_list(args):
+    """
+    Call get_projects or get_members
+    """
+    if args.members:
+        members = get_members(args.token, args.id)
+        if args.show:
+            if args.show == 'all':
+                print(json.dumps(members, indent=2))
+            elif args.show == 'url':
+                results = list(map(lambda p: p['web_url'], members))
+                for r in results:
+                    print(r)
+            else:
+                names = list(map(lambda p: p['username'], members))
+                for name in names:
+                    print(name)
+        else:
+            names = list(map(lambda p: p['username'], members))
+            for name in names:
+                print(name)
+    else:
+        projects = get_projects(args.token, args.id)
+        if args.show:
+            if args.show == 'all':
+                print(json.dumps(projects, indent=2))
+            elif args.show == 'url':
+                results = list(map(lambda p: p['http_url_to_repo'], projects))
+                for r in results:
+                    print(r)
+            elif args.show == 'ssh':
+                results = list(map(lambda p: p['ssh_url_to_repo'], projects))
+                for r in results:
+                    print(r)
+            else:
+                names = list(map(lambda p: p['name'], projects))
+                for name in names:
+                    print(name)
+        else:
+            names = list(map(lambda p: p['name'], projects))
+            for name in names:
+                print(name)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Practical Work Manager - \
         Manage students PW - Create group, projects or clone repositories')
@@ -241,7 +330,7 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--token", metavar="TOKEN",
                         help="Create a token here: https://gitedu.hesge.ch/profile/personal_access_tokens")
     subparsers = parser.add_subparsers(
-        metavar='(group_repos | group | repo | clone)')
+        metavar='(group_repos | group | repo | clone | list)')
 
     parser_group_repos = subparsers.add_parser(
         'group_repos', help='Create group and repos associated')
@@ -291,6 +380,19 @@ if __name__ == '__main__':
     parser_clone.add_argument(
         "-u", "--until_date", help="Do a git checkout for all repositories at given date, format \"YYYY-MM-DD hh:mm\" (optional).")
     parser_clone.set_defaults(func=command_clone_all)
+
+    parser_list = subparsers.add_parser(
+        'list', help="List group's projects or project's members")
+    group_list = parser_list.add_mutually_exclusive_group()
+    group_list.add_argument(
+        "-p", "--projects", action="store_true", help="List group's projects (default")
+    group_list.add_argument(
+        "-m", "--members", action="store_true", help="List project's members")
+    parser_list.add_argument(
+        "id", metavar="ID", help="The group_id or the project_id (int).")
+    parser_list.add_argument(
+        "-s", "--show", help="Amount of informations (default name) : [all | name | url | ssh]")
+    parser_list.set_defaults(func=command_list)
 
     args = parser.parse_args()
 
