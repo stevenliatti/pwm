@@ -54,7 +54,7 @@ pyyaml
 Pour rappel, pour ne pas à avoir à installer ces deux dépendances au niveau système, les commandes suivantes génèrent un environnement virtuel :
 
 ```bash
-python -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
